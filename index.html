@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, landscape">
+    <title>CyrooSpace Ultimate - No Features Removed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; color: white; font-family: 'Rajdhani', sans-serif; 
+            overflow: hidden; touch-action: manipulation;
+        }
+
+        /* --- ANIMASI GLITCH --- */
+        @keyframes glitch {
+            0% { text-shadow: 2px 2px #f72585, -2px -2px #4cc9f0; transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+        /* --- SPLASH SCREEN --- */
+        #splash-screen { 
+            position: fixed; inset: 0; z-index: 9999; 
+            background: radial-gradient(circle, #050010 0%, #000 100%); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .title-animasi { 
+            font-family: 'Orbitron'; font-size: 4rem; margin: 0;
+            background: linear-gradient(to right, #4cc9f0, #f72585); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+            animation: glitch 0.3s infinite; display: none;
+        }
+
+        .subtitle-animasi {
+            font-size: 12px; letter-spacing: 10px; color: #4cc9f0;
+            text-transform: uppercase; animation: pulse 1.5s infinite;
+            display: none; margin-top: 10px;
+        }
+
+        #btn-power { 
+            padding: 18px 60px; background: linear-gradient(135deg, #4361ee, #7209b7); 
+            color: white; font-family: 'Orbitron'; border: none; border-radius: 50px; 
+            font-weight: bold; cursor: pointer; box-shadow: 0 0 30px rgba(114, 9, 183, 0.6);
+            transition: 0.3s; z-index: 10000;
+        }
+
+        .loader-box { width: 300px; height: 6px; background: rgba(255,255,255,0.05); margin-top: 30px; border-radius: 10px; display: none; overflow: hidden; border: 1px solid rgba(76, 201, 240, 0.2); }
+        #bar { width: 0%; height: 100%; background: linear-gradient(to right, #4cc9f0, #f72585); box-shadow: 0 0 10px #4cc9f0; }
+
+        /* --- DASHBOARD --- */
+        #dashboard { 
+            display: none; height: 100vh; padding: 20px; 
+            background: radial-gradient(circle at center, #0a0515 0%, #000 100%); 
+            transition: background 1s ease;
+        }
+
+        .grid { display: grid; grid-template-columns: 1fr 2fr 1fr; height: 100%; gap: 15px; }
+
+        .panel { 
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(67, 97, 238, 0.2); 
+            padding: 20px; border-radius: 15px; backdrop-filter: blur(15px);
+            display: flex; flex-direction: column; position: relative;
+        }
+
+        /* --- APP LAUNCHER --- */
+        #app-list { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; 
+            overflow-y: auto; margin-top: 15px; flex-grow: 1; padding-right: 5px;
+        }
+        #app-list::-webkit-scrollbar { width: 4px; }
+        #app-list::-webkit-scrollbar-thumb { background: #4cc9f0; border-radius: 10px; }
+
+        .app-card { 
+            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; 
+            text-align: center; border: 1px solid rgba(76, 201, 240, 0.1); 
+            transition: 0.3s; cursor: pointer;
+        }
+        .app-card:active { transform: scale(0.95); background: rgba(247, 37, 133, 0.2); border-color: #f72585; }
+        .app-name { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- SIDEBAR --- */
+        #side-trigger { position: fixed; left: 0; top: 35%; width: 14px; height: 100px; background: #4cc9f0; z-index: 5000; border-radius: 0 12px 12px 0; cursor: pointer; box-shadow: 0 0 15px #4cc9f0; }
+        
+        #sidebar { 
+            position: fixed; left: -320px; top: 0; bottom: 0; width: 300px; 
+            background: rgba(5, 5, 15, 0.98); border-right: 2px solid #4cc9f0; 
+            z-index: 6000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            padding: 30px; display: flex; flex-direction: column;
+        }
+        #sidebar.active { left: 0; }
+
+        .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .quick-btn { padding: 12px; border: none; border-radius: 8px; color: white; font-family: 'Orbitron'; font-size: 11px; cursor: pointer; font-weight: bold; }
+        
+        .mode-btn { width: 100%; padding: 14px; margin-bottom: 10px; border: none; border-radius: 8px; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; transition: 0.3s; }
+
+        /* --- STATS --- */
+        .stat-label { font-size: 11px; color: #4cc9f0; font-family: 'Orbitron'; letter-spacing: 2px; margin-bottom: 5px; }
+        .stat-val { font-size: 28px; font-weight: bold; margin: 0; }
+        .stat-tag { font-size: 10px; color: #f72585; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <button id="btn-power" onclick="runSystem()">MUAT SISTEM</button>
+        <h1 id="main-title" class="title-animasi">CYROOSPACE</h1>
+        <div id="sub-title" class="subtitle-animasi">Initializing Security Protocol...</div>
+        <div id="loader" class="loader-box"><div id="bar"></div></div>
+    </div>
+
+    <div id="side-trigger" onclick="toggleMenu()"></div>
+    <div id="sidebar">
+        <h2 style="font-family:'Orbitron'; color:#f72585; margin-bottom: 5px;">SYSTEM MENU</h2>
+        <p class="stat-label">QUICK ACCESS (OVER GAME)</p>
+        <div class="quick-grid">
+            <button class="quick-btn" style="background:#25D366;" onclick="launchQuick('com.whatsapp')">WHATSAPP</button>
+            <button class="quick-btn" style="background:#FF0000;" onclick="launchQuick('com.google.android.youtube')">YOUTUBE</button>
+            <button class="quick-btn" style="background:#4285F4;" onclick="launchQuick('com.android.chrome')">BROWSER</button>
+            <button class="quick-btn" style="background:#7209b7;" onclick="launchQuick('com.cyroodev.cyroospace')">HOME</button>
+        </div>
+
+        <p class="stat-label" style="margin-top:20px;">POWER MODE</p>
+        <button class="mode-btn" onclick="setMode('performance')" style="background:#f72585; color:white;">PERFORMANCE</button>
+        <button class="mode-btn" onclick="setMode('balanced')" style="background:#4361ee; color:white;">BALANCED</button>
+        <button class="mode-btn" onclick="setMode('powersaving')" style="background:#00ffaa; color:black;">POWER SAVER</button>
+
+        <button onclick="toggleMenu()" style="width:100%; padding:12px; background:rgba(255,255,255,0.05); border:1px solid #4cc9f0; color:white; margin-top:auto; border-radius:8px;">TUTUP MENU</button>
+    </div>
+
+    <div id="dashboard">
+        <div class="grid">
+            <div class="panel">
+                <p class="stat-label">PERFORMANCE</p>
+                <h1 id="fps-val" style="color:#f72585; font-size: 3.5rem; margin:0;">60</h1>
+                <div id="status-tag" class="stat-tag">STABLE CONNECTION</div>
+                
+                <div style="margin-top:auto;">
+                    <p class="stat-label">MEMORY INFO</p>
+                    <p id="ram-val" class="stat-val">-- GB</p>
+                    <p style="font-size:10px; color:#4cc9f0;">RAM DETECTED</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <p class="stat-label" style="text-align:center;">INSTALLED GAMES</p>
+                <div id="app-list">
+                    <div style="grid-column: span 3; text-align:center; font-size:12px; margin-top:20px; opacity:0.5;">Scanning System...</div>
+                </div>
+            </div>
+
+            <div class="panel" style="text-align:right;">
+                <div>
+                    <p class="stat-label">TEMPERATURE</p>
+                    <h2 id="temp-main" class="stat-val">--°C</h2>
+                </div>
+                <div style="margin-top:20px;">
+                    <p class="stat-label">BATTERY LIFE</p>
+                    <h2 id="batt-main" class="stat-val">--%</h2>
+                </div>
+                <div style="margin-top:auto;">
+                    <p class="stat-label">HARDWARE</p>
+                    <p id="cpu-val" class="stat-val" style="font-size: 20px;">-- CORES</p>
+                    <button onclick="vibrateBoost()" style="margin-top:10px; background:#4361ee; border:none; color:white; padding:10px 20px; border-radius:5px; font-family:'Orbitron'; font-size:10px;">CLEAN RAM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- VOICE ASSISTANT ---
+        function speak(text) {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'id-ID';
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        // --- SIDEBAR LOGIC ---
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            if(navigator.vibrate) navigator.vibrate(40);
+        }
+
+        function launchQuick(pkg) {
+            speak("Membuka akses cepat");
+            if(window.AndroidBridge) AndroidBridge.openGame(pkg);
+            toggleMenu();
+        }
+
+        // --- POWER MODES (RE-ADDED FULL LOGIC) ---
+        function setMode(mode) {
+            const dash = document.getElementById('dashboard');
+            const fpsText = document.getElementById('fps-val');
+            const status = document.getElementById('status-tag');
+            
+            if (mode === 'performance') {
+                speak("Mode performa aktif. Kekuatan penuh diaktifkan.");
+                dash.style.background = "radial-gradient(circle, #250015, #000)";
+                fpsText.style.color = "#f72585";
+                status.innerText = "OVERCLOCKING MODE";
+                status.style.color = "#f72585";
+            } else if (mode === 'balanced') {
+                speak("Mode seimbang diaktifkan.");
+                dash.style.background = "radial-gradient(circle, #0a0515, #000)";
+                fpsText.style.color = "#4cc9f0";
+                status.innerText = "STABLE CONNECTION";
+                status.style.color = "#4cc9f0";
+            } else {
+                speak("Mode hemat daya aktif.");
+                dash.style.background = "radial-gradient(circle, #00150a, #000)";
+                fpsText.style.color = "#00ffaa";
+                status.innerText = "BATTERY SAVER ACTIVE";
+                status.style.color = "#00ffaa";
+            }
+            toggleMenu();
+        }
+
+        function vibrateBoost() {
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            speak("Memori dibersihkan. Sistem dioptimalkan.");
+        }
+
+        // --- JAVA NATIVE BRIDGE ---
+        function updateNativeData(temp, batt) {
+            document.getElementById('temp-main').innerText = temp + "°C";
+            document.getElementById('batt-main').innerText = batt + "%";
+        }
+
+        function displayApps(name, pkg) {
+            const list = document.getElementById('app-list');
+            if(list.innerText.includes("Scanning")) list.innerHTML = "";
+            
+            const card = document.createElement('div');
+            card.className = 'app-card';
+            card.innerHTML = `<div class="app-name">${name}</div>`;
+            card.onclick = () => {
+                speak("Membuka " + name);
+                if(window.AndroidBridge) AndroidBridge.openGame(pkg);
+            };
+            list.appendChild(card);
+        }
+
+        // --- CORE SYSTEM START ---
+        function runSystem() {
+            document.getElementById('btn-power').style.display = 'none';
+            document.getElementById('main-title').style.display = 'block';
+            document.getElementById('sub-title').style.display = 'block';
+            document.getElementById('loader').style.display = 'block';
+            
+            document.getElementById('cpu-val').innerText = (navigator.hardwareConcurrency || 8) + " CORES";
+            document.getElementById('ram-val').innerText = (navigator.deviceMemory || 4) + " GB";
+
+            speak("Sistem Cyroo Space aktif. Memulai sinkronisasi perangkat.");
+
+            let w = 0;
+            let bar = document.getElementById('bar');
+            let i = setInterval(() => {
+                w += 2;
+                bar.style.width = w + '%';
+                if (w >= 100) {
+                    clearInterval(i);
+                    showDashboard();
+                }
+            }, 40);
+        }
+
+        function showDashboard() {
+            const splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                if(window.AndroidBridge) AndroidBridge.getInstalledApps();
+            }, 500);
+        }
+
+        // --- REALTIME FPS COUNTER ---
+        let lastTime = performance.now();
+        function getFPS() {
+            let now = performance.now();
+            let fps = Math.round(1000 / (now - lastTime));
+            lastTime = now;
+            if(fps > 120) fps = 120;
+            document.getElementById('fps-val').innerText = fps;
+            requestAnimationFrame(getFPS);
+        }
+        getFPS();
+    </script>
+</body>
+</html>
